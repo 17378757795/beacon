@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>使用说明 · 信标</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;padding:0 0 calc(40px + env(safe-area-inset-bottom));
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f6f8fb;color:#0f172a;font-size:16px;line-height:1.75;
+    -webkit-font-smoothing:antialiased
+  }
+  header{
+    position:sticky;top:0;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(14px);
+    backdrop-filter:blur(14px);border-bottom:1px solid #ebeff5;
+    padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:10px
+  }
+  header a{color:#2563eb;text-decoration:none;font-size:15px;padding:4px 8px;border-radius:8px;background:#eef4ff}
+  header h1{font-size:16px;font-weight:600;margin:0}
+  main{padding:16px 16px 0}
+  section{background:#fff;border:1px solid #eef1f6;border-radius:16px;padding:16px 16px 6px;margin-bottom:12px}
+  h2{font-size:15px;font-weight:600;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+  .n{
+    width:22px;height:22px;border-radius:7px;background:#e8f0fe;color:#2563eb;
+    font-size:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto
+  }
+  p{margin:0 0 10px;font-size:14.5px;color:#475569}
+  b{color:#0f172a;font-weight:600}
+  .code{
+    font-family:ui-monospace,Consolas,monospace;background:#f1f5f9;border-radius:6px;
+    padding:1px 6px;font-size:13px;color:#2563eb
+  }
+  .tip{background:#fffbeb;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#92400e;margin-bottom:10px}
+  footer{text-align:center;color:#94a3b8;font-size:12px;padding:20px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <a href="/">‹ 返回</a>
+  <h1>使用说明</h1>
+</header>
+
+<main>
+  <section>
+    <h2><span class="n">1</span>“共享”是什么意思</h2>
+    <p>共享，就是<b>把你电脑上的一个普通文件夹，开放给手机看</b>。</p>
+    <p>这个文件夹真的存在你的硬盘上（默认 <span class="code">D:\Beacon</span>）。你在电脑上往里放东西、删东西、改名字，手机上立刻同步；手机上传来传去的东西，也全都落在这个文件夹里。</p>
+    <p>它不是网盘，不做备份，也没有第二份副本——<b>你在窗口里看到的，就是磁盘上的实物</b>。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>为什么下载下来是压缩包</h2>
+    <p>手机浏览器有个死规矩：<b>一次只能存一个“文件”，不能直接存一个“文件夹”</b>。</p>
+    <p>所以下载整个文件夹时，电脑会先把里面所有东西打包成一个 <span class="code">.zip</span>，手机存下来之后再自己解压成文件夹。单个文件不受影响，下载下来就是原样。</p>
+    <div class="tip">
+      <b>iPhone</b>：下载完成后打开「文件」App → 下载 → <b>点一下那个 zip</b>，系统会自动解压出同名文件夹。<br>
+      <b>安卓</b>：在「文件管理」里点一下 zip，选择解压到当前目录。
+    </div>
+    <p>如果只是想拿几张图，不用打包——进文件夹，点每张图右边的 <b>↓</b> 单独下载会更快，而且支持断点续传。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>两个方向其实是一件事</h2>
+    <p>电脑传给手机、手机传给电脑，走的是同一条 WiFi 链路，本质上都是“一边把文件给另一边”。所以界面里不再区分上传区和下载区，只有一个共享文件夹。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>删除会删掉电脑上的文件</h2>
+    <p>会。这里的删除等于在资源管理器里删文件。不过<b>它会先进 Windows 回收站</b>，可以从回收站还原。清空回收站之后就真的没了。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>速度和断点</h2>
+    <p>速度取决于 WiFi：2.4G 约 5–10 MB/s，5G 约 20–50 MB/s。</p>
+    <p><b>单个文件</b>支持断点续传，断了重新点会接着下。<br><b>小文件夹打包</b>（1.2GB 以内）有总大小、有进度、也能续传。<br><b>超大文件夹</b>边打包边发，没有进度百分比，断了要重下——量大的话建议进去挑需要的文件单独下。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>手机上的东西存在哪</h2>
+    <p>iPhone 存在「文件」App 的<b>下载</b>里；安卓存在<b>Download</b> 目录。想让照片进相册，在「文件」里长按选“存储到照片”。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>怎么像 App 一样用</h2>
+    <p>这套东西没有 .apk、也没有 .ipa，因为那需要开发者证书和应用商店审核。但可以把它“装”到主屏幕，用起来和 App 几乎一样：全屏、有自己的图标、不用每次输地址。</p>
+    <p><b>iPhone</b>：Safari 打开 → 底部「分享」→ 添加到主屏幕。<br>
+       <b>安卓</b>：浏览器右上角菜单 → 添加到主屏幕。</p>
+    <p>注意：扫二维码那一次仍然要扫，因为地址里的 token 每次重装都会变。装到主屏幕后，只要电脑上的程序还开着，点图标就能直接进。</p>
+  </section>
+
+  <footer>信标 Beacon · 局域网中转站</footer>
+</main>
+</body>
+</html>

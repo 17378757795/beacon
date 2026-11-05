@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行产物（每次启动自动重建，不要提交）
+beacon.config.json
+beacon.log
+.cache/
+*.log
+
+# 构建中间产物
+build/
+*.spec
+
+# 签名密钥
+*.jks
+*.keystore
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beacon 信标</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#0f172a; --ink2:#475569; --ink3:#94a3b8;
+    --line:#e8ecf2; --bg:#f7f9fc; --card:#fff; --brand:#2563eb;
+  }
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);background:var(--bg);font-size:14px;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{display:grid;grid-template-columns:326px 1fr;height:100vh}
+
+  .rail{
+    background:linear-gradient(180deg,#0f172a 0%,#111c33 100%);
+    color:#e2e8f0;padding:26px 24px 20px;display:flex;flex-direction:column;gap:0;
+    border-right:1px solid #0b1220;
+  }
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+  .logo{
+    width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#3b82f6,#22d3ee);color:#fff;font-size:17px;font-weight:600;
+  }
+  .brand h1{font-size:16px;font-weight:600;letter-spacing:.5px;line-height:1.2}
+  .brand small{font-size:11px;color:#7c8ba6;letter-spacing:.6px}
+
+  .qr-card{
+    background:#fff;border-radius:18px;padding:12px;align-self:center;
+    box-shadow:0 12px 32px rgba(2,8,23,.45);
+  }
+  .qr-card img{display:block;width:222px;height:222px;border-radius:8px}
+  .hint{text-align:center;font-size:12px;color:#8ea0bd;line-height:1.7;margin:14px 0 10px}
+
+  .url{
+    font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11.5px;color:#93c5fd;
+    background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);
+    border-radius:9px;padding:9px 11px;text-align:center;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .url:hover{background:rgba(59,130,246,.18)}
+
+  .pill{
+    display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#94a3b8;
+    margin-top:16px;padding:6px 11px;border-radius:20px;background:rgba(148,163,184,.1);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:#64748b;transition:background .3s}
+  .pill.on .dot{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.16)}
+  .pill.on{color:#86efac;background:rgba(34,197,94,.1)}
+
+  .storage{margin-top:auto;padding-top:20px}
+  .srow{display:flex;justify-content:space-between;font-size:11.5px;color:#8ea0bd;margin-bottom:7px}
+  .bar{height:5px;border-radius:3px;background:rgba(148,163,184,.18);overflow:hidden}
+  .bar>div{height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#3b82f6,#22d3ee);transition:width .5s}
+  .path{
+    font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10.5px;color:#64748b;
+    margin-top:9px;word-break:break-all;line-height:1.5;max-height:32px;overflow:hidden
+  }
+  .lowtip{
+    display:none;font-size:10.5px;color:#fca5a5;line-height:1.5;margin-top:8px;
+    background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.22);
+    border-radius:7px;padding:6px 8px
+  }
+
+  .rail-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+  .rail-actions button{
+    font-family:inherit;font-size:12.5px;padding:10px;border-radius:10px;cursor:pointer;
+    border:1px solid rgba(148,163,184,.22);background:rgba(148,163,184,.1);color:#cbd5e1;
+    transition:all .15s
+  }
+  .rail-actions button:hover{background:rgba(148,163,184,.2);color:#fff}
+  .rail-actions button.ghost{border-color:transparent;background:transparent;color:#8b9ab1}
+  .rail-actions button.ghost:hover{color:#f87171;background:rgba(248,113,113,.1)}
+  .rail-actions button.accent{
+    background:linear-gradient(135deg,#2563eb,#3b82f6);border-color:transparent;color:#fff;
+    box-shadow:0 6px 18px rgba(37,99,235,.35);font-weight:500
+  }
+  .rail-actions button.accent:hover{filter:brightness(1.06);color:#fff}
+
+  main{display:flex;flex-direction:column;height:100vh;min-width:0}
+  header{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:18px 26px 14px;background:var(--card);border-bottom:1px solid var(--line)
+  }
+  .crumbs{display:flex;align-items:center;gap:2px;font-size:13.5px;color:var(--ink2);overflow:hidden;white-space:nowrap}
+  .crumbs a{color:var(--ink2);text-decoration:none;padding:4px 7px;border-radius:7px;cursor:pointer}
+  .crumbs a:hover{background:#f1f5f9;color:var(--brand)}
+  .crumbs a.cur{color:var(--ink);font-weight:500}
+  .crumbs .sep{color:#cbd5e1;font-size:12px}
+  .tools{display:flex;gap:8px}
+  .tools button{
+    font-family:inherit;font-size:12.5px;padding:8px 14px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink2);transition:all .15s
+  }
+  .tools button:hover{border-color:#cbd5e1;background:#f8fafc;color:var(--ink)}
+
+  .table{flex:1;overflow:auto;padding:6px 12px 20px}
+  .thead,.row{display:grid;grid-template-columns:1fr 92px 108px 118px;align-items:center;gap:10px}
+  .thead{
+    padding:10px 16px 10px 58px;font-size:11.5px;color:var(--ink3);
+    position:sticky;top:0;background:var(--bg);z-index:2;letter-spacing:.3px
+  }
+  .row{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:11px 16px 11px 12px;margin-bottom:7px;transition:border-color .15s,box-shadow .15s;
+    cursor:default
+  }
+  .row:hover{border-color:#c7d7f0;box-shadow:0 2px 10px rgba(15,23,42,.05)}
+  .fname{display:flex;align-items:center;gap:11px;min-width:0}
+  .ico{
+    flex:0 0 34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.4px
+  }
+  .ico.dir{background:#e8f0fe;color:#2563eb;font-size:15px}
+  .ico .g{background:rgba(255,255,255,.22);position:absolute}
+  .txt{min-width:0}
+  .txt b{display:block;font-weight:500;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .txt small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+  .badge{display:inline-block;font-size:10px;font-weight:500;padding:1px 6px;border-radius:5px;
+    margin-right:7px;letter-spacing:.3px;vertical-align:1px}
+  .badge.inbox{background:#dcfce7;color:#15803d}
+  .badge.outbox{background:#dbeafe;color:#1d4ed8}
+  .col-size,.col-time{font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .col-time{color:var(--ink3);font-size:12px}
+  .ops{display:flex;gap:4px;justify-content:flex-end;opacity:0;transition:opacity .15s}
+  .row:hover .ops{opacity:1}
+  .ops button{
+    font-family:inherit;font-size:11.5px;padding:5px 9px;border-radius:7px;cursor:pointer;
+    border:1px solid transparent;background:#f1f5f9;color:var(--ink2)
+  }
+  .ops button:hover{background:#e2e8f0;color:var(--ink)}
+  .ops button.danger:hover{background:#fee2e2;color:#dc2626}
+  .empty{text-align:center;color:var(--ink3);padding:80px 20px;font-size:13.5px;line-height:2}
+  .empty b{display:block;font-size:15px;color:var(--ink2);font-weight:500;margin-bottom:4px}
+
+  .foot{
+    padding:9px 26px;font-size:11.5px;color:var(--ink3);background:var(--card);
+    border-top:1px solid var(--line);display:flex;justify-content:space-between
+  }
+  .drop{
+    position:fixed;inset:0;background:rgba(37,99,235,.08);border:2px dashed #2563eb;
+    display:none;align-items:center;justify-content:center;font-size:15px;color:#2563eb;
+    backdrop-filter:blur(3px);z-index:50
+  }
+  .drop.on{display:flex}
+  .toast{
+    position:fixed;left:50%;bottom:52px;transform:translateX(-50%) translateY(8px);
+    background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:12.5px;
+    opacity:0;pointer-events:none;transition:all .22s;z-index:60
+  }
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .modal{
+    position:fixed;inset:0;background:rgba(15,23,42,.42);display:none;
+    align-items:center;justify-content:center;z-index:70
+  }
+  .modal.on{display:flex}
+  .box{background:#fff;border-radius:16px;padding:24px;width:420px;box-shadow:0 24px 60px rgba(2,8,23,.28)}
+  .box h3{font-size:15px;font-weight:600;margin-bottom:6px}
+  .box p{font-size:12.5px;color:var(--ink3);line-height:1.7;margin-bottom:14px}
+  .box input{
+    width:100%;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;padding:10px 12px;
+    border:1px solid var(--line);border-radius:9px;outline:none;color:var(--ink)
+  }
+  .box input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+  .box .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  .box .acts button{font-family:inherit;font-size:12.5px;padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink2)}
+  .box .acts button.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+  .box .acts button.pri:hover{background:#1d4ed8}
+
+  .helpov{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;
+    align-items:center;justify-content:center;z-index:80}
+  .helpbox{width:660px;height:80vh;background:#fff;border-radius:16px;overflow:hidden;
+    display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(2,8,23,.3)}
+  .helpbox .hh{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 18px;border-bottom:1px solid #eef1f6;font-size:14px;font-weight:500}
+  .helpbox .hh button{border:0;background:#eef2f9;border-radius:8px;padding:6px 14px;
+    font-family:inherit;font-size:12.5px;color:#334155;cursor:pointer}
+  .helpbox iframe{flex:1;border:0;width:100%;background:#f6f8fb}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <div class="logo">◈</div>
+      <div>
+        <h1>{{ cn }} Beacon</h1>
+        <small>局域网中转站 · v{{ version }}</small>
+      </div>
+    </div>
+
+    <div class="qr-card"><img id="qr" src="/api/qr.png" alt="二维码"></div>
+    <p class="hint">手机扫描二维码接入<br>同一 WiFi 内直接互传</p>
+    <div class="url" id="url" title="点击复制">{{ url }}</div>
+    <div><span class="pill" id="pill"><i class="dot"></i><span id="pillText">等待手机接入</span></span></div>
+
+    <div class="storage">
+      <div class="srow"><span>存储占用</span><span id="freeText">—</span></div>
+      <div class="bar"><div id="barFill"></div></div>
+      <div class="path" id="rootPath">—</div>
+      <div class="lowtip" id="lowTip">空间快满了，建议点「更改共享文件夹」换到大一点的盘</div>
+    </div>
+
+    <div class="rail-actions">
+      <button id="btnOpen" class="accent">打开共享文件夹</button>
+      <button id="btnRoot">更改共享文件夹</button>
+      <button id="btnHelp" class="ghost">使用说明</button>
+      <button id="btnQuit" class="ghost">退出程序</button>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="tools">
+        <button id="btnNew">新建文件夹</button>
+        <button id="btnRefresh">刷新</button>
+      </div>
+    </header>
+
+    <div class="table">
+      <div class="thead"><span>名称</span><span>大小</span><span>修改时间</span><span></span></div>
+      <div id="rows"></div>
+      <div id="empty" class="empty" style="display:none">
+        <b>这里还没有文件</b>
+        把文件拖进窗口，或者用手机扫码上传
+      </div>
+    </div>
+
+    <div class="foot">
+      <span id="footLeft">就绪</span>
+      <span id="footRight">双击文件可直接打开</span>
+    </div>
+  </main>
+</div>
+
+<div class="drop" id="drop">松开鼠标即可上传</div>
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h3 id="mTitle">更改存储位置</h3>
+    <p id="mDesc">文件会存到这个文件夹里，手机端也会跟着切换。</p>
+    <input id="mInput" placeholder="D:\共享">
+    <div class="acts">
+      <button id="mBrowse">浏览…</button>
+      <button id="mCancel">取消</button>
+      <button id="mOk" class="pri">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  let cur = '';
+  let lastHash = '';
+  let phones = 0;
+  let modalMode = 'root';
+
+  const COLORS = { img:'#16a34a', vid:'#7c3aed', aud:'#d97706', doc:'#2563eb', zip:'#dc2626', exe:'#475569', other:'#94a3b8' };
+  const IMG = ['png','jpg','jpeg','gif','webp','heic','bmp','svg','avif'];
+  const VID = ['mp4','mov','mkv','avi','webm','m4v'];
+  const AUD = ['mp3','wav','m4a','flac','aac','ogg'];
+  const DOC = ['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','md','csv','json','log'];
+  const ZIP = ['zip','rar','7z','tar','gz'];
+  const EXE = ['exe','msi','apk'];
+
+  function kind(ext) {
+    if (IMG.includes(ext)) return { c: COLORS.img, t: ext };
+    if (VID.includes(ext)) return { c: COLORS.vid, t: ext };
+    if (AUD.includes(ext)) return { c: COLORS.aud, t: ext };
+    if (DOC.includes(ext)) return { c: COLORS.doc, t: ext };
+    if (ZIP.includes(ext)) return { c: COLORS.zip, t: ext };
+    if (EXE.includes(ext)) return { c: COLORS.exe, t: ext };
+    return { c: COLORS.other, t: ext ? ext.slice(0, 4) : 'file' };
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function fmtTime(ts) {
+    const d = new Date(ts * 1000), n = new Date();
+    const p = x => String(x).padStart(2, '0');
+    if (d.toDateString() === n.toDateString()) return '今天 ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    if (d.getFullYear() === n.getFullYear()) return (d.getMonth()+1) + '月' + d.getDate() + '日 ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    return d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
+  }
+
+  function toast(msg, ms) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('on'), ms || 2000);
+  }
+
+  function api(url, opt) { return fetch(url, opt).then(r => r.json()); }
+
+  function renderCrumbs(path) {
+    const parts = path ? path.split('/').filter(Boolean) : [];
+    let html = '<a data-p="" class="' + (parts.length ? '' : 'cur') + '">根目录</a>';
+    let acc = [];
+    parts.forEach((p, i) => {
+      acc.push(p);
+      const isLast = i === parts.length - 1;
+      html += '<span class="sep">›</span><a data-p="' + esc(acc.join('/')) + '" class="' + (isLast ? 'cur' : '') + '">' + esc(p) + '</a>';
+    });
+    $('#crumbs').innerHTML = html;
+    $('#crumbs').querySelectorAll('a').forEach(a => a.onclick = () => load(a.dataset.p));
+  }
+
+  function load(path) {
+    cur = path || '';
+    api('/api/list?p=' + encodeURIComponent(cur)).then(d => {
+      if (!d.ok) { toast(d.error || '读取失败'); return; }
+      renderCrumbs(cur);
+      $('#rootPath').textContent = d.root;
+      $('#freeText').textContent = '剩余 ' + d.free;
+      $('#barFill').style.width = (d.percent || 0) + '%';
+      const lowSpace = (d.percent || 0) >= 95;
+      $('#freeText').style.color = lowSpace ? '#f87171' : '#8ea0bd';
+      $('#lowTip').style.display = lowSpace ? 'block' : 'none';
+      phones = d.phones;
+      updatePill();
+      const hash = JSON.stringify(d.items);
+      if (hash === lastHash) return;
+      lastHash = hash;
+      renderList(d.items);
+    }).catch(() => toast('服务无响应'));
+  }
+
+  function updatePill() {
+    const pill = $('#pill'), txt = $('#pillText');
+    if (phones > 0) { pill.classList.add('on'); txt.textContent = '手机已连接 · ' + phones + ' 台'; }
+    else { pill.classList.remove('on'); txt.textContent = '等待手机接入'; }
+  }
+
+  function renderList(items) {
+    const box = $('#rows');
+    if (!items.length) {
+      box.innerHTML = '';
+      $('#empty').style.display = 'block';
+      return;
+    }
+    $('#empty').style.display = 'none';
+    box.innerHTML = items.map(it => {
+      const child = (cur ? cur + '/' : '') + it.name;
+      const k = it.dir ? null : kind(it.ext);
+      const ico = it.dir
+        ? '<div class="ico dir">▸</div>'
+        : '<div class="ico" style="background:' + k.c + '">' + k.t + '</div>';
+      const sub = it.dir ? '文件夹' : (it.ext ? it.ext.toUpperCase() : '文件');
+      return '<div class="row" data-p="' + esc(child) + '" data-dir="' + it.dir + '" data-name="' + esc(it.name) + '">' +
+        '<div class="fname">' + ico + '<div class="txt"><b>' + esc(it.name) + '</b><small>' + sub + '</small></div></div>' +
+        '<div class="col-size">' + (it.sizeText || '—') + '</div>' +
+        '<div class="col-time">' + fmtTime(it.mtime) + '</div>' +
+        '<div class="ops">' +
+          '<button data-act="open">' + (it.dir ? '打开' : '查看') + '</button>' +
+          '<button data-act="rename">改名</button>' +
+          '<button data-act="delete" class="danger">删除</button>' +
+        '</div></div>';
+    }).join('');
+
+    box.querySelectorAll('.row').forEach(row => {
+      const p = row.dataset.p;
+      row.ondblclick = () => {
+        if (row.dataset.dir === 'true') load(p);
+        else api('/api/open', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ p }) });
+      };
+      row.querySelectorAll('.ops button').forEach(btn => {
+        btn.onclick = e => {
+          e.stopPropagation();
+          const act = btn.dataset.act;
+          if (act === 'open') {
+            if (row.dataset.dir === 'true') load(p);
+            else api('/api/open', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ p }) })
+                 .then(r => { if (!r.ok) toast(r.error || '打开失败'); });
+          } else if (act === 'rename') {
+            openModal('rename', row.dataset.name, p);
+          } else if (act === 'delete') {
+            if (!confirm('删除「' + row.dataset.name + '」？\n\n它会先移到 Windows 回收站，可以从回收站还原。')) return;
+            api('/api/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ p }) })
+              .then(r => {
+                if (!r.ok) { toast(r.error || '删除失败'); return; }
+                toast(r.trash ? '已移到回收站' : '已永久删除');
+                lastHash = ''; load(cur);
+              });
+          }
+        };
+      });
+    });
+  }
+
+  function openModal(mode, name, path) {
+    modalMode = mode;
+    const m = $('#modal');
+    if (mode === 'root') {
+      $('#mTitle').textContent = '更改共享文件夹';
+      $('#mDesc').textContent = '电脑和手机看到的都是这个文件夹。建议选空间大的盘，也可以直接指向你已有的文件夹。';
+      $('#mInput').value = $('#rootPath').textContent;
+      $('#mBrowse').style.display = '';
+    } else {
+      $('#mTitle').textContent = '重命名';
+      $('#mDesc').textContent = '给这个文件或文件夹换个名字。';
+      $('#mInput').value = name;
+      $('#mInput').dataset.path = path;
+      $('#mBrowse').style.display = 'none';
+    }
+    m.classList.add('on');
+    setTimeout(() => $('#mInput').focus(), 60);
+  }
+
+  $('#mCancel').onclick = () => $('#modal').classList.remove('on');
+  $('#modal').onclick = e => { if (e.target.id === 'modal') $('#modal').classList.remove('on'); };
+  $('#mInput').onkeydown = e => { if (e.key === 'Enter') $('#mOk').click(); };
+
+  $('#mBrowse').onclick = () => {
+    toast('正在打开选择框…');
+    api('/api/pickfolder').then(r => {
+      if (r.ok && r.path) $('#mInput').value = r.path;
+      else if (!r.ok) toast(r.error || '未选择');
+    });
+  };
+
+  $('#mOk').onclick = () => {
+    const val = $('#mInput').value.trim();
+    if (!val) return;
+    if (modalMode === 'root') {
+      api('/api/root', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path: val }) })
+        .then(r => {
+          if (r.ok) { $('#modal').classList.remove('on'); lastHash = ''; toast('已切换存储位置'); load(''); }
+          else toast(r.error || '切换失败');
+        });
+    } else {
+      api('/api/rename', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ p: $('#mInput').dataset.path, name: val }) })
+        .then(r => {
+          if (r.ok) { $('#modal').classList.remove('on'); lastHash = ''; load(cur); toast('已重命名'); }
+          else toast(r.error || '重命名失败');
+        });
+    }
+  };
+
+  $('#btnRoot').onclick = () => openModal('root');
+  $('#btnOpen').onclick = () => api('/api/open', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ p: cur }) })
+      .then(r => { if (!r.ok) toast(r.error || '打不开文件夹'); });
+  $('#btnHelp').onclick = () => {
+    if (document.querySelector('.helpov')) return;
+    const ov = document.createElement('div');
+    ov.className = 'helpov';
+    ov.innerHTML = '<div class="helpbox"><div class="hh"><span>使用说明</span>' +
+      '<button id="helpClose">关闭</button></div><iframe src="/help"></iframe></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('#helpClose').onclick = () => ov.remove();
+    ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  };
+  $('#btnQuit').onclick = () => {
+    if (!confirm('退出后手机将无法继续传输，确定退出？')) return;
+    api('/api/shutdown', { method:'POST' }).finally(() => window.close());
+  };
+  $('#btnNew').onclick = () => {
+    const name = prompt('新文件夹名称');
+    if (!name) return;
+    api('/api/mkdir', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ p: cur, name }) })
+      .then(r => { toast(r.ok ? '已创建' : (r.error || '创建失败')); lastHash = ''; load(cur); });
+  };
+  $('#btnRefresh').onclick = () => { lastHash = ''; load(cur); };
+  $('#url').onclick = function () {
+    navigator.clipboard.writeText(this.textContent).then(() => toast('地址已复制'));
+  };
+
+  let dropCount = 0;
+  window.addEventListener('dragenter', e => { e.preventDefault(); dropCount++; $('#drop').classList.add('on'); });
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('dragleave', e => { if (--dropCount <= 0) { dropCount = 0; $('#drop').classList.remove('on'); } });
+  window.addEventListener('drop', async e => {
+    e.preventDefault(); dropCount = 0; $('#drop').classList.remove('on');
+    const items = e.dataTransfer.items ? [...e.dataTransfer.items] : [];
+    const rawEntries = [];
+    const rawFiles = [];
+    for (const it of items) {
+      let en = null;
+      try { en = it.webkitGetAsEntry && it.webkitGetAsEntry(); } catch (_) { en = null; }
+      if (en) rawEntries.push(en);
+    }
+    for (const f of e.dataTransfer.files) rawFiles.push(f);
+
+    const entries = [];
+    for (const en of rawEntries) await walkEntry(en, '', entries);
+    if (!entries.length) {
+      for (const f of rawFiles) if (f.size > 0) entries.push({ file: f, dir: '' });
+    }
+    if (!entries.length) { toast('没有可上传的文件'); return; }
+    uploadBatch(entries);
+  });
+
+  async function walkEntry(entry, prefix, out) {
+    if (!entry) return;
+    if (entry.isFile) {
+      const f = await new Promise((res, rej) => entry.file(res, rej));
+      if (f.size > 0) out.push({ file: f, dir: prefix });
+      return;
+    }
+    if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const sub = prefix ? prefix + '/' + entry.name : entry.name;
+      for (;;) {
+        const batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+        if (!batch.length) break;
+        for (const child of batch) await walkEntry(child, sub, out);
+      }
+    }
+  }
+
+  function fmtBytes(n) {
+    if (n >= 1073741824) return (n / 1073741824).toFixed(1) + ' GB';
+    if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
+    return (n / 1024).toFixed(0) + ' KB';
+  }
+
+  function postSmall(file, target) {
+    return new Promise((resolve, reject) => {
+      const fd = new FormData();
+      fd.append('p', target);
+      fd.append('files', file, file.name);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
+      xhr.onload = () => {
+        let r = null;
+        try { r = JSON.parse(xhr.responseText); } catch (_) { r = null; }
+        if (r && r.ok) resolve(r);
+        else reject(new Error(r && r.error ? r.error : ('服务器返回 ' + xhr.status)));
+      };
+      xhr.onerror = () => reject(new Error('网络中断'));
+      xhr.send(fd);
+    });
+  }
+
+  async function postChunked(file, target) {
+    const init = await fetch('/api/upload/init', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p: target, name: file.name, size: file.size })
+    }).then(r => r.json());
+    if (!init.ok) throw new Error(init.error || '无法创建上传任务');
+    const cs = init.chunk || (2 * 1024 * 1024);
+    for (let i = 0; i < init.chunks; i++) {
+      const blob = file.slice(i * cs, Math.min((i + 1) * cs, file.size));
+      let lastErr;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const fd = new FormData();
+          fd.append('id', init.id);
+          fd.append('index', String(i));
+          fd.append('data', blob, 'chunk');
+          const r = await fetch('/api/upload/chunk', { method: 'POST', body: fd }).then(x => x.json());
+          if (!r.ok) throw new Error(r.error || '分片失败');
+          lastErr = null;
+          break;
+        } catch (err) {
+          lastErr = err;
+          await new Promise(r => setTimeout(r, 700 * (attempt + 1)));
+        }
+      }
+      if (lastErr) throw lastErr;
+    }
+    const fin = await fetch('/api/upload/finish', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: init.id })
+    }).then(r => r.json());
+    if (!fin.ok) throw new Error(fin.error || '合并失败');
+  }
+
+  async function uploadBatch(entries) {
+    const total = entries.reduce((a, e) => a + e.file.size, 0);
+    const space = await api('/api/space?p=' + encodeURIComponent(cur)).catch(() => null);
+    if (space && space.ok && total > space.free - 100 * 1024 * 1024) {
+      toast('磁盘空间不足：需要 ' + fmtBytes(total) + '，' + space.drive + ' 只剩 ' + space.freeText
+            + '。点左下角「更改共享文件夹」换个大点的盘。', 6500);
+      return;
+    }
+    if (entries.length > 2000) {
+      toast('共 ' + entries.length + ' 个文件，会比较久。更快的方式是用「更改共享文件夹」直接指向这个文件夹。', 6000);
+    }
+    const queue = entries.slice();
+    let doneFiles = 0, doneBytes = 0, failed = 0, firstErr = '';
+    const upd = () => {
+      $('#footLeft').textContent = '上传中 ' + doneFiles + '/' + entries.length
+        + ' 个文件 · ' + (doneBytes / 1048576).toFixed(1) + ' MB'
+        + (failed ? ' · 失败 ' + failed : '');
+    };
+    upd();
+    async function worker() {
+      while (queue.length) {
+        const item = queue.shift();
+        const target = (cur ? cur + '/' : '') + item.dir;
+        let ok = false;
+        for (let attempt = 0; attempt < 2 && !ok; attempt++) {
+          try {
+            if (item.file.size > 64 * 1024 * 1024) await postChunked(item.file, target);
+            else await postSmall(item.file, target);
+            ok = true;
+          } catch (err) {
+            if (attempt === 0) await new Promise(r => setTimeout(r, 500));
+            else { failed++; if (!firstErr) firstErr = err.message || '未知错误'; }
+          }
+        }
+        if (ok) doneBytes += item.file.size;
+        doneFiles++;
+        upd();
+      }
+    }
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    $('#footLeft').textContent = '就绪';
+    if (!failed) toast('已上传 ' + entries.length + ' 个文件');
+    else toast(failed + ' 个失败（' + firstErr + '），其余已完成', 6000);
+    lastHash = ''; load(cur);
+  }
+
+
+  const PID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  function ping() {
+    return fetch('/api/desk/ping?pid=' + PID, { method: 'POST' }).then(r => r.json());
+  }
+
+  window.addEventListener('beforeunload', () => {
+    try { navigator.sendBeacon('/api/desk/bye?pid=' + PID); } catch (_) {}
+  });
+
+  fetch('/api/qr.png').catch(() => {});
+  ping().then(d => { if (d.root) $('#rootPath').textContent = d.root; }).catch(() => {});
+  load('');
+
+  setInterval(() => {
+    ping().then(d => { phones = d.phones; updatePill(); }).catch(() => {});
+    api('/api/list?p=' + encodeURIComponent(cur)).then(d => {
+      if (!d.ok) return;
+      $('#freeText').textContent = '剩余 ' + d.free;
+      const hash = JSON.stringify(d.items);
+      if (hash !== lastHash) { lastHash = hash; renderList(d.items); }
+    }).catch(() => {});
+  }, 2000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="信标">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>信标 · 直接传</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f6f8fb;color:#0f172a;font-size:16px;line-height:1.5;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;
+    touch-action:manipulation;
+  }
+  header{
+    position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border-bottom:1px solid #ebeff5;
+    padding:calc(10px + env(safe-area-inset-top)) 16px 0;
+  }
+  .brand{display:flex;align-items:center;gap:8px;padding-bottom:10px}
+  .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#22d3ee);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+  .brand h1{font-size:16px;font-weight:600;margin:0;letter-spacing:.3px}
+  .helpbtn{
+    width:22px;height:22px;border-radius:50%;background:#eef4ff;color:#2563eb;text-decoration:none;
+    font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:0 0 auto
+  }
+  .helpbtn:active{background:#dbe7fb}
+  .brand .tag{margin-left:auto;font-size:11.5px;color:#94a3b8;font-variant-numeric:tabular-nums}
+
+  .crumbs{
+    display:flex;align-items:center;gap:2px;font-size:13px;color:#64748b;
+    padding-bottom:9px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch
+  }
+  .crumbs::-webkit-scrollbar{display:none}
+  .crumbs a{color:#2563eb;text-decoration:none;padding:3px 6px;border-radius:6px;flex:0 0 auto}
+  .crumbs a:active{background:#eef2f9}
+  .crumbs .sep{color:#cbd5e1;font-size:12px;flex:0 0 auto}
+
+  main{padding:8px 12px 0;min-height:40vh}
+  .row{display:flex;align-items:center;gap:12px;background:#fff;margin-bottom:8px;
+    padding:12px;border-radius:14px;border:1px solid #eef1f6}
+  .row:active{background:#fafbfd}
+  .th{flex:0 0 46px;width:46px;height:46px;border-radius:11px;object-fit:cover;background:#f1f5f9;display:block}
+  .ico{flex:0 0 46px;width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;font-weight:600;color:#fff;letter-spacing:.4px;text-transform:uppercase}
+  .ico.dir{background:#e8f0fe;color:#2563eb;font-size:18px}
+  .meta{flex:1;min-width:0}
+  .name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sub{font-size:12px;color:#94a3b8;margin-top:3px}
+  .more{border:0;background:transparent;color:#cbd5e1;font-size:20px;padding:8px 4px;line-height:1;flex:0 0 auto}
+  .dl{
+    flex:0 0 auto;border:0;width:38px;height:38px;border-radius:11px;background:#eef4ff;color:#2563eb;
+    font-size:17px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center
+  }
+  .dl:active{background:#dbe7fb;transform:scale(.95)}
+
+  .empty{text-align:center;color:#94a3b8;padding:64px 24px;font-size:14px;line-height:2}
+  .empty .big{font-size:34px;margin-bottom:10px;opacity:.5}
+  .empty b{display:block;font-size:15.5px;color:#475569;font-weight:500;margin-bottom:6px}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.97);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border-top:1px solid #ebeff5;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
+  .btn{flex:1;border:0;border-radius:14px;padding:15px 8px;font-size:15px;font-weight:500;
+    background:#eef2f9;color:#334155;text-align:center;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn.primary{background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;flex:1.6;
+    box-shadow:0 6px 18px rgba(37,99,235,.28)}
+  .btn:active{opacity:.85;transform:scale(.99)}
+
+  .prog{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom));
+    background:#0f172a;color:#fff;border-radius:15px;padding:13px 15px;display:none;
+    box-shadow:0 12px 32px rgba(15,23,42,.25);z-index:30}
+  .prog.on{display:block}
+  .prog .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:9px;gap:10px}
+  .prog .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prog .track{height:5px;background:rgba(255,255,255,.18);border-radius:3px;overflow:hidden}
+  .prog .fill{height:100%;width:0;background:linear-gradient(90deg,#4ade80,#22d3ee);transition:width .2s}
+  .prog .bottom{display:flex;justify-content:space-between;font-size:11.5px;color:#94a3b8;margin-top:8px}
+  .prog .hintline{font-size:11px;color:#64748b;margin-top:6px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px}
+
+  .toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;
+    background:rgba(15,23,42,.94);color:#fff;padding:13px 20px;border-radius:13px;font-size:14px;
+    opacity:0;pointer-events:none;transition:opacity .2s;max-width:82vw;text-align:center}
+  .toast.on{opacity:1}
+
+  .sheet{position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:50;display:none;align-items:flex-end}
+  .sheet.on{display:flex}
+  .sheet .panel{background:#fff;width:100%;border-radius:20px 20px 0 0;
+    padding:8px 0 calc(10px + env(safe-area-inset-bottom));animation:up .22s ease}
+  @keyframes up{from{transform:translateY(18px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet .hd{text-align:center;font-size:12.5px;color:#94a3b8;padding:12px 16px 8px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sheet button{display:block;width:100%;border:0;background:transparent;font-family:inherit;
+    font-size:16px;padding:16px;text-align:center;color:#0f172a}
+  .sheet button:active{background:#f4f6fa}
+  .sheet button.danger{color:#e11d48}
+  .sheet button.cancel{border-top:8px solid #f1f5f9;color:#64748b;margin-top:8px}
+
+  .viewer{position:fixed;inset:0;background:#0b1220;z-index:70;display:none;
+    align-items:center;justify-content:center}
+  .viewer.on{display:flex}
+  .viewer img,.viewer video{max-width:100%;max-height:100%;object-fit:contain}
+  .viewer audio{width:86%}
+  .viewer pre{color:#e2e8f0;font-size:13px;line-height:1.75;padding:20px;
+    width:100%;height:100%;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0;
+    font-family:ui-monospace,Consolas,monospace;-webkit-overflow-scrolling:touch}
+  .viewer .close{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;
+    width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;
+    font-size:20px;line-height:1;z-index:2}
+  .viewer .vbar{
+    position:absolute;left:12px;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));
+    display:flex;gap:8px;z-index:2
+  }
+  .viewer .vbar button{
+    flex:1;border:0;border-radius:13px;padding:14px;font-family:inherit;font-size:14.5px;font-weight:500;
+    background:rgba(255,255,255,.94);color:#0f172a
+  }
+  .viewer .vbar button:active{opacity:.85}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">◈</div>
+    <h1>信标</h1>
+    <a class="helpbtn" href="/help">?</a>
+    <span class="tag" id="freeTag"></span>
+  </div>
+  <div class="crumbs" id="crumbs" style="display:none"></div>
+</header>
+
+<main>
+  <div id="list"></div>
+  <div class="empty" id="empty" style="display:none"></div>
+</main>
+
+<div class="prog" id="prog">
+  <div class="top"><span class="nm" id="pName">正在上传</span><span id="pPct">0%</span></div>
+  <div class="track"><div class="fill" id="pFill"></div></div>
+  <div class="bottom"><span id="pSpeed">—</span><span id="pEta">—</span></div>
+  <div class="hintline">上传时请保持屏幕常亮，切到其他 App 会中断</div>
+</div>
+
+<div class="bar">
+  <label class="btn primary">上传到电脑
+    <input type="file" id="pick" multiple hidden>
+  </label>
+  <label class="btn">拍照
+    <input type="file" id="cam" accept="image/*" capture="environment" hidden>
+  </label>
+  <button class="btn" id="mkdirBtn">新建</button>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <div class="hd" id="sheetTitle"></div>
+    <button id="actDownload">下载到手机</button>
+    <button id="actRename">重命名</button>
+    <button id="actDelete" class="danger">删除</button>
+    <button class="cancel" id="actCancel">取消</button>
+  </div>
+</div>
+
+<div class="viewer" id="viewer">
+  <button class="close" id="viewerClose">×</button>
+  <div id="viewerBody" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"></div>
+  <div class="vbar"><button id="saveBtn">保存到手机</button></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+
+  let cur = '';
+  let lastHash = '';
+  let sheetPath = '', sheetName = '', sheetDir = false, sheetSize = 0;
+
+  const COLORS = { img:'#16a34a', vid:'#7c3aed', aud:'#d97706', doc:'#2563eb', zip:'#dc2626', exe:'#475569', other:'#94a3b8' };
+  const IMG = ['png','jpg','jpeg','gif','webp','heic','heif','bmp','svg','avif'];
+  const VID = ['mp4','mov','mkv','avi','webm','m4v','3gp'];
+  const AUD = ['mp3','wav','m4a','flac','aac','ogg'];
+  const DOC = ['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','md','csv','json','log'];
+  const ZIP = ['zip','rar','7z','tar','gz'];
+  const EXE = ['exe','msi','apk'];
+  const TEXT = ['txt','md','log','json','csv'];
+
+  function kind(ext) {
+    if (IMG.includes(ext)) return { c: COLORS.img, t: ext };
+    if (VID.includes(ext)) return { c: COLORS.vid, t: ext };
+    if (AUD.includes(ext)) return { c: COLORS.aud, t: ext };
+    if (DOC.includes(ext)) return { c: COLORS.doc, t: ext };
+    if (ZIP.includes(ext)) return { c: COLORS.zip, t: ext };
+    if (EXE.includes(ext)) return { c: COLORS.exe, t: ext };
+    return { c: COLORS.other, t: ext ? ext.slice(0, 4) : 'file' };
+  }
+  function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function toast(msg, ms) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('on');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('on'), ms || 1900);
+  }
+  function api(url, opt) { return fetch(url, opt).then(r => r.json()); }
+
+  function fmtTime(ts) {
+    const d = new Date(ts * 1000), n = new Date();
+    const p = x => String(x).padStart(2, '0');
+    if (d.toDateString() === n.toDateString()) return '今天 ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function renderCrumbs(path) {
+    const parts = path ? path.split('/').filter(Boolean) : [];
+    if (!parts.length) {
+      $('#crumbs').style.display = 'none';
+      return;
+    }
+    $('#crumbs').style.display = 'flex';
+    let html = '<a href="#" data-p="">共享文件夹</a>';
+    let acc = [];
+    parts.forEach(p => {
+      acc.push(p);
+      html += '<span class="sep">›</span><a href="#" data-p="' + esc(acc.join('/')) + '">' + esc(p) + '</a>';
+    });
+    $('#crumbs').innerHTML = html;
+    $('#crumbs').querySelectorAll('a').forEach(a => {
+      a.onclick = e => { e.preventDefault(); load(a.dataset.p); };
+    });
+    setTimeout(() => { $('#crumbs').scrollLeft = 9999; }, 30);
+  }
+
+  function emptyHtml() {
+    return '<div class="big">◈</div><b>这里还没有文件</b>电脑上放进共享文件夹的东西会出现在这里<br>你也可以点下面的按钮往电脑传';
+  }
+
+  function load(path) {
+    cur = path || '';
+    api('/api/list?p=' + encodeURIComponent(cur)).then(d => {
+      if (!d.ok) { toast(d.error || '读取失败'); return; }
+      renderCrumbs(cur);
+      $('#freeTag').textContent = '剩余 ' + d.free;
+      const hash = JSON.stringify(d.items);
+      if (hash === lastHash) return;
+      lastHash = hash;
+      const box = $('#list');
+      if (!d.items.length) {
+        box.innerHTML = '';
+        $('#empty').style.display = 'block';
+        $('#empty').innerHTML = emptyHtml();
+        return;
+      }
+      $('#empty').style.display = 'none';
+      box.innerHTML = d.items.map(it => {
+        const child = (cur ? cur + '/' : '') + it.name;
+        let visual;
+        if (it.dir) {
+          visual = '<div class="ico dir">▸</div>';
+        } else if (IMG.includes(it.ext)) {
+          visual = '<img class="th" loading="lazy" decoding="async" src="/api/thumb?p=' + encodeURIComponent(child) + '" alt="" data-ext="' + it.ext + '">';
+        } else {
+          const k = kind(it.ext);
+          visual = '<div class="ico" style="background:' + k.c + '">' + k.t + '</div>';
+        }
+        const sub = it.dir ? '文件夹' : (it.sizeText + ' · ' + fmtTime(it.mtime));
+        return '<div class="row" data-p="' + esc(child) + '" data-dir="' + it.dir + '" data-name="' + esc(it.name) +
+          '" data-ext="' + (it.ext || '') + '" data-size="' + (it.size || 0) + '">' +
+          visual +
+          '<div class="meta"><div class="name">' + esc(it.name) + '</div><div class="sub">' + sub + '</div></div>' +
+          (it.dir ? '' : '<button class="dl" data-dl="' + esc(child) + '" data-name="' + esc(it.name) + '">↓</button>') +
+          '<button class="more">⋯</button>' +
+          '</div>';
+      }).join('');
+
+      box.querySelectorAll('img.th').forEach(img => {
+        img.onerror = () => {
+          const k = kind(img.dataset.ext || '');
+          const div = document.createElement('div');
+          div.className = 'ico';
+          div.style.background = k.c;
+          div.textContent = k.t;
+          img.replaceWith(div);
+        };
+      });
+
+      box.querySelectorAll('.row').forEach(row => {
+        const dl = row.querySelector('.dl');
+        if (dl) dl.onclick = e => {
+          e.stopPropagation();
+          saveToPhone(dl.dataset.dl, dl.dataset.name);
+        };
+        row.querySelector('.more').onclick = e => {
+          e.stopPropagation();
+          openSheet(row.dataset.p, row.dataset.name, row.dataset.dir === 'true', Number(row.dataset.size || 0));
+        };
+        row.onclick = () => {
+          const p = row.dataset.p, ext = row.dataset.ext;
+          if (row.dataset.dir === 'true') { load(p); return; }
+          if (IMG.includes(ext) || VID.includes(ext) || AUD.includes(ext) || TEXT.includes(ext)) {
+            preview(p, ext, Number(row.dataset.size || 0));
+          } else {
+            location.href = '/f?p=' + encodeURIComponent(p);
+          }
+        };
+      });
+    }).catch(() => toast('连不上电脑，检查是否同一 WiFi'));
+  }
+
+  const IS_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  let previewPath = '', previewName = '';
+
+  function saveToPhone(p, name, directUrl) {
+    const a = document.createElement('a');
+    a.href = directUrl || ('/f?p=' + encodeURIComponent(p));
+    a.download = name || '';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 1200);
+    toast(IS_IOS ? '开始下载，进度在 Safari 的下载列表里' : '开始下载，进度在通知栏里', 3000);
+  }
+
+  function preview(p, ext, size) {
+    previewPath = p;
+    previewName = p.split('/').pop();
+    const body = $('#viewerBody');
+    const src = '/f?p=' + encodeURIComponent(p) + '&inline=1';
+    if (IMG.includes(ext)) {
+      body.innerHTML = '<img src="' + src + '" alt="">';
+    } else if (VID.includes(ext)) {
+      body.innerHTML = '<video src="' + src + '" controls autoplay playsinline webkit-playsinline preload="metadata"></video>';
+    } else if (AUD.includes(ext)) {
+      body.innerHTML = '<audio src="' + src + '" controls autoplay></audio>';
+    } else if (size > 2 * 1024 * 1024) {
+      body.innerHTML = '<pre>这个文件有点大（' + (size / 1048576).toFixed(1) + ' MB），直接看会卡。\n关掉后用「下载到手机」保存再看。</pre>';
+    } else {
+      body.innerHTML = '<pre>加载中…</pre>';
+      fetch(src).then(r => r.text()).then(t => {
+        const pre = body.querySelector('pre');
+        if (pre) pre.textContent = t;
+      }).catch(() => {
+        const pre = body.querySelector('pre');
+        if (pre) pre.textContent = '无法预览，请下载后查看';
+      });
+    }
+    $('#viewer').classList.add('on');
+  }
+
+  $('#viewerClose').onclick = () => {
+    $('#viewer').classList.remove('on');
+    $('#viewerBody').innerHTML = '';
+    previewPath = '';
+  };
+
+  $('#saveBtn').onclick = () => {
+    if (!previewPath) return;
+    saveToPhone(previewPath, previewName);
+  };
+
+  function openSheet(p, name, isDir, size) {
+    sheetPath = p; sheetName = name; sheetDir = isDir; sheetSize = size;
+    $('#sheetTitle').textContent = name;
+    const dl = $('#actDownload');
+    if (isDir) {
+      dl.textContent = '正在统计大小…';
+      fetch('/api/size?p=' + encodeURIComponent(p)).then(r => r.json()).then(d => {
+        if (d.ok) { sheetSize = d.size; dl.textContent = '打包成 ZIP 下载 · ' + d.sizeText; }
+        else dl.textContent = '打包成 ZIP 下载';
+      }).catch(() => { dl.textContent = '打包成 ZIP 下载'; });
+    } else {
+      dl.textContent = size > 1073741824
+        ? '下载到手机（' + (size / 1073741824).toFixed(1) + ' GB）'
+        : '下载到手机';
+    }
+    $('#sheet').classList.add('on');
+  }
+  $('#actCancel').onclick = () => $('#sheet').classList.remove('on');
+  $('#sheet').onclick = e => { if (e.target.id === 'sheet') $('#sheet').classList.remove('on'); };
+
+  $('#actDownload').onclick = () => {
+    $('#sheet').classList.remove('on');
+    if (sheetDir) {
+      if (sheetSize > 1200 * 1024 * 1024) {
+        const gb = (sheetSize / 1073741824).toFixed(1);
+        if (!confirm('这个文件夹有 ' + gb + ' GB。\n会边打包边发送，中途断开要重下（不能续传）。\n建议：进去只挑要的文件，单张下载可以续传。\n\n仍然打包下载？')) return;
+      }
+      toast(IS_IOS ? '正在打包成 ZIP，下载完在「文件」里点一下就会自动解压'
+                   : '正在打包成 ZIP，下载完在文件管理里点一下解压', 4200);
+      saveToPhone('', sheetName + '.zip', '/zip?p=' + encodeURIComponent(sheetPath));
+      return;
+    }
+    if (sheetSize > 1073741824) {
+      const gb = (sheetSize / 1073741824).toFixed(1);
+      if (!confirm('这个文件有 ' + gb + ' GB。\n下载会很久，中途锁屏或切 App 可能中断。\n确认继续？')) return;
+    }
+    saveToPhone(sheetPath, sheetName);
+  };
+  $('#actRename').onclick = () => {
+    $('#sheet').classList.remove('on');
+    const name = prompt('新名称', sheetName);
+    if (!name || name === sheetName) return;
+    api('/api/rename', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ p: sheetPath, name }) })
+      .then(r => { toast(r.ok ? '已重命名' : (r.error || '失败')); load(cur); });
+  };
+  $('#actDelete').onclick = () => {
+    $('#sheet').classList.remove('on');
+    if (!confirm('删除「' + sheetName + '」？\n\n会移到电脑的回收站，可以从回收站还原。')) return;
+    api('/api/delete', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ p: sheetPath }) })
+      .then(r => {
+        if (!r.ok) { toast(r.error || '删除失败'); return; }
+        toast(r.trash ? '已移到电脑回收站' : '已永久删除');
+        load(cur);
+      });
+  };
+
+  $('#mkdirBtn').onclick = () => {
+    const name = prompt('新文件夹名称');
+    if (!name) return;
+    api('/api/mkdir', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ p: cur, name }) })
+      .then(r => { toast(r.ok ? '已创建' : (r.error || '失败')); load(cur); });
+  };
+
+  function fmtSpeed(bps) {
+    if (bps > 1048576) return (bps / 1048576).toFixed(1) + ' MB/s';
+    if (bps > 1024) return (bps / 1024).toFixed(0) + ' KB/s';
+    return bps.toFixed(0) + ' B/s';
+  }
+  function fmtEta(sec) {
+    if (!isFinite(sec) || sec <= 0) return '计算中…';
+    if (sec < 60) return '约 ' + Math.ceil(sec) + ' 秒';
+    if (sec < 3600) return '约 ' + Math.ceil(sec / 60) + ' 分钟';
+    return '约 ' + (sec / 3600).toFixed(1) + ' 小时';
+  }
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function retry(fn, times, delay) {
+    times = times || 3; delay = delay || 1200;
+    let last;
+    for (let i = 0; i < times; i++) {
+      try { return await fn(i); }
+      catch (e) {
+        last = e;
+        if (i < times - 1) {
+          $('#pSpeed').textContent = '中断，正在重试 ' + (i + 1) + '/2';
+          await sleep(delay * (i + 1));
+        }
+      }
+    }
+    throw last;
+  }
+
+  let wakeLock = null;
+  async function keepAwake() {
+    try {
+      if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    } catch (_) {}
+  }
+  function releaseAwake() {
+    try { if (wakeLock) wakeLock.release(); } catch (_) {}
+    wakeLock = null;
+  }
+
+  function setProg(pct, speedText, etaText) {
+    $('#pFill').style.width = Math.min(100, pct).toFixed(1) + '%';
+    $('#pPct').textContent = Math.min(100, pct).toFixed(0) + '%';
+    if (speedText !== undefined) $('#pSpeed').textContent = speedText;
+    if (etaText !== undefined) $('#pEta').textContent = etaText;
+  }
+
+  function uploadWhole(file, base) {
+    return new Promise((resolve, reject) => {
+      const fd = new FormData();
+      fd.append('p', cur);
+      fd.append('files', file, file.name);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
+      let lastLoaded = 0, lastTime = Date.now();
+      xhr.upload.onprogress = e => {
+        if (!e.lengthComputable) return;
+        const now = Date.now(), dt = (now - lastTime) / 1000;
+        let bps = 0;
+        if (dt > 0.3) { bps = (e.loaded - lastLoaded) / dt; lastLoaded = e.loaded; lastTime = now; }
+        const done = base.done + e.loaded;
+        setProg(done / base.total * 100, bps > 0 ? fmtSpeed(bps) : '准备中…',
+                bps > 0 ? fmtEta((base.total - done) / bps) : '');
+      };
+      xhr.onload = () => {
+        try {
+          const r = JSON.parse(xhr.responseText);
+          if (r.ok) { base.done += file.size; resolve(r); }
+          else reject(new Error(r.error || '服务器拒绝了这次上传'));
+        } catch (_) { reject(new Error('响应异常')); }
+      };
+      xhr.onerror = () => reject(new Error('网络中断'));
+      xhr.onabort = () => reject(new Error('已取消'));
+      xhr.send(fd);
+    });
+  }
+
+  async function uploadChunked(file, base) {
+    const init = await fetch('/api/upload/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p: cur, name: file.name, size: file.size })
+    }).then(r => r.json());
+    if (!init.ok) throw new Error(init.error || '无法创建上传任务');
+
+    const chunkSize = init.chunk || (2 * 1024 * 1024);
+    const total = init.chunks;
+    let sent = 0, lastTime = Date.now(), lastBytes = 0;
+
+    for (let i = 0; i < total; i++) {
+      const blob = file.slice(i * chunkSize, Math.min((i + 1) * chunkSize, file.size));
+      await retry(async () => {
+        const fd = new FormData();
+        fd.append('id', init.id);
+        fd.append('index', String(i));
+        fd.append('data', blob, 'chunk');
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 90000);
+        let res;
+        try {
+          res = await fetch('/api/upload/chunk', { method: 'POST', body: fd, signal: ctrl.signal });
+        } finally { clearTimeout(timer); }
+        const j = await res.json();
+        if (!j.ok) throw new Error(j.error || '分片失败');
+        return j;
+      }, 4, 900);
+
+      sent += blob.size;
+      const now = Date.now(), dt = (now - lastTime) / 1000;
+      let bps = 0;
+      if (dt > 0.4) { bps = (sent - lastBytes) / dt; lastTime = now; lastBytes = sent; }
+      const done = base.done + sent;
+      setProg(done / base.total * 100,
+              (bps > 0 ? fmtSpeed(bps) : '准备中…') + ' · ' + (i + 1) + '/' + total,
+              bps > 0 ? fmtEta((base.total - done) / bps) : '');
+    }
+
+    const fin = await fetch('/api/upload/finish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: init.id })
+    }).then(r => r.json());
+    if (!fin.ok) throw new Error(fin.error || '合并失败');
+    base.done += file.size;
+    return fin;
+  }
+
+  async function uploadQueue(files) {
+    const arr = [...files];
+    if (!arr.length) return;
+    const totalBytes = arr.reduce((a, f) => a + f.size, 0);
+    const base = { done: 0, total: totalBytes };
+    const prog = $('#prog');
+    prog.classList.add('on');
+    await keepAwake();
+
+    let failed = [];
+    let firstError = '';
+    for (let i = 0; i < arr.length; i++) {
+      const file = arr[i];
+      $('#pName').textContent = (arr.length > 1 ? '[' + (i + 1) + '/' + arr.length + '] ' : '') + file.name;
+      setProg(base.done / base.total * 100, '准备中…', '');
+      try {
+        if (file.size > 6 * 1024 * 1024) await uploadChunked(file, base);
+        else await retry(() => uploadWhole(file, base), 2, 1500);
+      } catch (e) {
+        failed.push(file.name);
+        if (!firstError) firstError = e && e.message ? e.message : '上传中断';
+        base.done += file.size;
+      }
+    }
+
+    releaseAwake();
+    prog.classList.remove('on');
+    if (failed.length) {
+      const tip = failed.length === 1
+        ? firstError
+        : ('有 ' + failed.length + ' 个没传成功：' + firstError);
+      toast(tip, 6000);
+    } else {
+      toast('已传到电脑');
+    }
+    load(cur);
+  }
+
+  $('#pick').onchange = e => { uploadQueue(e.target.files); e.target.value = ''; };
+  $('#cam').onchange = e => { uploadQueue(e.target.files); e.target.value = ''; };
+
+  load('');
+  setInterval(() => { fetch('/api/ping', { method: 'POST' }).catch(() => {}); }, 8000);
+  fetch('/api/ping', { method: 'POST' }).catch(() => {});
+
+  setInterval(() => {
+    if (document.hidden) return;
+    if ($('#viewer').classList.contains('on')) return;
+    if ($('#sheet').classList.contains('on')) return;
+    if ($('#prog').classList.contains('on')) return;
+    load(cur);
+  }, 4000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) load(cur);
+  });
+})();
+</script>
+</body>
+</html>

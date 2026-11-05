@@ -1,0 +1,9 @@
+# 运行时依赖
+Flask>=3.0
+waitress>=3.0
+qrcode[pil]>=7.4
+pillow>=10.0
+pywebview>=5.0
+
+# 打包成 exe 时才需要：
+# pyinstaller>=6.0
